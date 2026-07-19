@@ -1,2 +1,1 @@
-React + Vite + TypeScript + Firebase Firestore application for managing items with real-time data fetching, mock data seeding, and responsive UI. Built with React 19, Tailwind CSS, Vitest testing, and comprehensive CI/CD setup with Husky pre-commit hooks.
-
+Logomaro — React + Vite + TypeScript logo generator for DeFi/crypto brand marks. Features 30 hand-crafted SVG logos (static + animated), AI-driven logo generation via Puter.js, procedural random logo engine (new logo every 5s), filterable grid (All/Static/Dynamic/AI Gen), SVG copy-to-clipboard, and pause/play controls. Built with React 19, Framer Motion, Zustand, Tailwind CSS v4, and Vitest.

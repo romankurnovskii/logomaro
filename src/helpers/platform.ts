@@ -1,3 +1,13 @@
+/**
+ * @file platform.ts
+ * @description Platform detection utilities for web/app/mobile/desktop.
+ *
+ * @features
+ * - `usePlatform` hook — reactive platform detection
+ * - `getPlatform` — immediate detection
+ * - Helpers: `isApp`, `isWeb`, `isAndroid`, `isIOS`, `isMobileWeb`, `isDesktopWeb`, `isMobile`, `isDesktop`
+ * - String formatters: `getPlatformString`, `getDetailedPlatformString`
+ */
 import { useState, useEffect } from 'react';
 
 // Extend Window interface for custom properties

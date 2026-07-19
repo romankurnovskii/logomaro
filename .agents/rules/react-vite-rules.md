@@ -1,7 +1,9 @@
 ---
-trigger: glob
-description: Universal TypeScript/React standards — file docstrings required in all .ts/.tsx files; full architecture patterns apply to frontend only
-globs: ['apps/**/*.{ts,tsx}', 'packages/**/*.{ts,tsx}']
+description: description: TypeScript/React architecture — file docstrings required in all .ts/.tsx files; container/component split, Zustand state, directory roles, testing patterns. Apply when writing or modifying any .ts/.tsx file.
+trigger: always_on
+globs: ['apps/**/*.{ts,tsx}', 'packages/**/*.{ts,tsx}', 'frontend/src/**/*.{ts,tsx}']
+alwaysApply: false
+version: 3.0.2
 ---
 
 # TypeScript & React Architecture Standards

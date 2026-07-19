@@ -1,3 +1,13 @@
+/**
+ * @file firebase.ts
+ * @description Reusable Firebase mocks for Vitest.
+ *
+ * @features
+ * - `mockUser` — fake authenticated user
+ * - `mockAuth` — auth API mocks
+ * - `mockQuerySnapshot` — builds a fake QuerySnapshot
+ * - `mockDoc`, `mockCollection`, `mockGetDocs`, `mockAddDoc`, `mockDocRef`
+ */
 import { vi } from 'vitest';
 
 // Mock Firebase Auth

@@ -1,59 +1,42 @@
-# [Your Theme Name]
+by mew
 
-> A modern, **responsive** React + Vite theme—lightweight, customizable, and optimized for performance.
+# Logomaro
 
----
+Generate institutional-grade geometric abstract SVG marks for DeFi and Web3 brands instantly via hand-crafted vectors, local procedural randomness, or natural language AI synthesis.
 
-## 🔍 Overview
+![Logomaro Desktop](docs/assets/desktop.png)
 
-- **Purpose**: Kickstart dashboards, landing pages, admin panels, or marketing sites.
-- **Approach**: Component-driven, mobile-first design, zero-dependency CSS (Tailwind-ready).
-- **Ideal for**: Developers who want a polished UI with minimal setup.
+Logomaro is a lightweight, high-performance logo exploration engine designed specifically for developers and Web3 builders who need clean, scalable, geometric brand assets. By combining hand-crafted SVG geometry with a local procedural generator and Puter.js AI synthesis, it eliminates the need for expensive design agencies or complex vector editing software when spinning up new dApps or protocols.
 
----
+## Features
 
-## 🏆 Key Features
+- **Puter.js AI Synthesis** — Describe a concept in natural language and receive clean, production-ready SVG code dynamically.
+- **Procedural Engine** — Explore a new random geometric SVG composition generated locally every 5 seconds.
+- **Hand-Crafted Vector Library** — Includes 30 custom geometric marks (20 static, 10 animated with Framer Motion).
+- **Instant SVG Access** — Click to copy clean SVG code directly to your clipboard from a high-density, filterable explorer grid.
+- **Continuous Memory Buffer** — View, pause, play, and search up to 500 generated iterations in a persistent viewport.
 
-- **Blazing Fast**  
-  Vite-powered HMR and optimized production bundling.
-- **Fully Responsive**  
-  From widescreen desktops down to phone-sized screens.
-- **Dark & Light Modes**  
-  Auto-detect or toggle manually.
-- **TypeScript-First**  
-  Every component ships with full typings.
-- **Configurable Themes**  
-  One file to tweak colors, typography, and breakpoints.
-- **Accessible**  
-  Built with a11y best practices in mind.
-- **RTL Support**  
-  Ready for right-to-left languages.
-
----
-
-## 🖼️ Screenshots
-
-![Screenshot 1](assets/001.jpeg)  
-![Screenshot 2](assets/002.jpeg)  
-![Screenshot 3](assets/003.jpeg)  
-![Screenshot 4](assets/004.jpeg)  
-![Screenshot 5](assets/005.jpeg)  
-![Screenshot 6](assets/006.jpeg)  
-![Screenshot 7](assets/007.jpeg)  
-![Screenshot 8](assets/008.jpeg)  
-![Screenshot 9](assets/009.jpeg)  
-![Screenshot 10](assets/010.jpeg)
-
-> _More screenshots available in the `assets/` folder._
-
----
-
-## 🛠️ Installation
+## Getting Started
 
 ```bash
-# install dependencies
-npm install
+# Install dependencies
+pnpm install
 
-# start dev server
-npm run dev
+# Start the local development server
+pnpm dev
+
+# Run Vitest suite
+pnpm test:run
+
+# Verify TypeScript compilation
+pnpm typecheck
+
+# Build optimized production bundle
+pnpm build
 ```
+
+## Links
+
+- **Features Guide:** [docs/marketing/features.md](file:///Users/r/dev/github/logomaro/docs/marketing/features.md)
+- **Monetization Options:** [docs/marketing/offer.md](file:///Users/r/dev/github/logomaro/docs/marketing/offer.md)
+- **License:** MIT

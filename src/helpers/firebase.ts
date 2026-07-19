@@ -1,3 +1,14 @@
+/**
+ * @file firebase.ts
+ * @description Firebase app initialization and service exports.
+ *
+ * @features
+ * - Initializes Firebase app with env-based config
+ * - Exports auth, Firestore (with persistent cache), and Storage instances
+ *
+ * @dependencies Firebase v12
+ * @sideEffects Initializes Firebase on module import
+ */
 import { initializeApp, getApp, getApps } from 'firebase/app';
 import { getAuth, indexedDBLocalPersistence, type User } from 'firebase/auth';
 

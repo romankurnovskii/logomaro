@@ -1,3 +1,11 @@
+/**
+ * @file utils.tsx
+ * @description Custom render helpers and mock utilities for Vitest.
+ *
+ * @features
+ * - Custom `render` wrapper around React Testing Library
+ * - `createMockFunction` helper for vi.fn() factories
+ */
 import type { ReactElement } from 'react';
 import { render, type RenderOptions } from '@testing-library/react';
 import { vi } from 'vitest';

@@ -1,24 +1,33 @@
+/**
+ * @file App.test.tsx
+ * @description Test suite for the App component (Logomaro logo generator).
+ *
+ * @features
+ * - Tests rendering of header, filter tabs, and AI input
+ * - Tests filter tab switching
+ * - Tests logo grid rendering
+ */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from './test/utils';
 import userEvent from '@testing-library/user-event';
-import App from './App';
-import { mockQuerySnapshot } from './test/mocks/firebase';
-import * as firestore from 'firebase/firestore';
-import * as populateModule from './helpers/populate';
+import { App } from './App';
 
-// Mock firebase/firestore
-vi.mock('firebase/firestore', () => ({
-  collection: vi.fn(),
-  getDocs: vi.fn(),
-}));
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Props = { children?: any; [key: string]: any };
 
-// Mock the firebase helpers
-vi.mock('./helpers/firebase', () => ({
-  db: {},
-}));
-
-vi.mock('./helpers/populate', () => ({
-  populate: vi.fn(() => Promise.resolve()),
+// Mock framer-motion to avoid animation issues in tests
+vi.mock('framer-motion', () => ({
+  motion: {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    div: ({ children, layout, ...props }: Props) => <div {...props}>{children}</div>,
+    span: ({ children, ...props }: Props) => <span {...props}>{children}</span>,
+    path: ({ children, ...props }: Props) => <path {...props}>{children}</path>,
+    circle: ({ children, ...props }: Props) => <circle {...props}>{children}</circle>,
+    polygon: ({ children, ...props }: Props) => <polygon {...props}>{children}</polygon>,
+    rect: ({ children, ...props }: Props) => <rect {...props}>{children}</rect>,
+    g: ({ children, ...props }: Props) => <g {...props}>{children}</g>,
+  },
+  AnimatePresence: ({ children }: Props) => <>{children}</>,
 }));
 
 describe('App', () => {
@@ -27,173 +36,58 @@ describe('App', () => {
   });
 
   it('should render the app with header', () => {
-    vi.mocked(firestore.getDocs).mockResolvedValue(
-      mockQuerySnapshot([]) as unknown as Awaited<ReturnType<typeof firestore.getDocs>>
-    );
-
     render(<App />);
+    expect(screen.getByText('Logomaro')).toBeInTheDocument();
+    expect(screen.getByText(/Brand Mark Exploration/)).toBeInTheDocument();
+  });
 
-    expect(screen.getByText('Firestore Items')).toBeInTheDocument();
+  it('should render filter tabs', () => {
+    render(<App />);
+    expect(screen.getByText('All')).toBeInTheDocument();
+    expect(screen.getByText('Static')).toBeInTheDocument();
+    expect(screen.getByText('Dynamic')).toBeInTheDocument();
+    expect(screen.getByText('AI Gen')).toBeInTheDocument();
+  });
+
+  it('should render AI input field', () => {
+    render(<App />);
     expect(
-      screen.getByText('Seed mock data and view your collection below.')
+      screen.getByPlaceholderText(/enter words to steer ai synthesis/i)
     ).toBeInTheDocument();
   });
 
-  it('should show loading state initially', async () => {
-    // Delay the response to test loading state
-    vi.mocked(firestore.getDocs).mockImplementation(
-      () =>
-        new Promise<Awaited<ReturnType<typeof firestore.getDocs>>>((resolve) => {
-          setTimeout(
-            () =>
-              resolve(
-                mockQuerySnapshot([]) as unknown as Awaited<
-                  ReturnType<typeof firestore.getDocs>
-                >
-              ),
-            100
-          );
-        })
-    );
-
+  it('should render the GENERATE button', () => {
     render(<App />);
-
-    // Should show loading message when fetching and no items
-    await waitFor(() => {
-      expect(screen.getByText('Loading items…')).toBeInTheDocument();
-    });
+    expect(screen.getByText('GENERATE')).toBeInTheDocument();
   });
 
-  it('should display "No items yet" when collection is empty', async () => {
-    vi.mocked(firestore.getDocs).mockResolvedValue(
-      mockQuerySnapshot([]) as unknown as Awaited<ReturnType<typeof firestore.getDocs>>
-    );
-
+  it('should render logo cards', () => {
     render(<App />);
-
-    await waitFor(() => {
-      expect(screen.getByText('No items yet.')).toBeInTheDocument();
-    });
+    // Should render at least some logo cards (the initial 30)
+    const conceptLabels = screen.getAllByText(/Concept/i);
+    expect(conceptLabels.length).toBeGreaterThan(0);
   });
 
-  it('should display items when they exist', async () => {
-    const mockItems = [
-      {
-        id: '1',
-        data: { title: 'First item', createdAt: Date.now() },
-      },
-      {
-        id: '2',
-        data: { title: 'Second item', createdAt: Date.now() },
-      },
-    ];
-
-    vi.mocked(firestore.getDocs).mockResolvedValue(
-      mockQuerySnapshot(mockItems) as unknown as Awaited<ReturnType<typeof firestore.getDocs>>
-    );
-
-    render(<App />);
-
-    await waitFor(() => {
-      expect(screen.getByText('First item')).toBeInTheDocument();
-      expect(screen.getByText('Second item')).toBeInTheDocument();
-    });
-  });
-
-  it('should call populate when seed button is clicked', async () => {
+  it('should switch filter when tab is clicked', async () => {
     const user = userEvent.setup();
-
-    vi.mocked(firestore.getDocs).mockResolvedValue(
-      mockQuerySnapshot([]) as unknown as Awaited<ReturnType<typeof firestore.getDocs>>
-    );
-
     render(<App />);
 
-    const seedButton = screen.getByRole('button', { name: /seed mock data/i });
-    await user.click(seedButton);
+    const staticTab = screen.getByText('Static');
+    await user.click(staticTab);
 
+    // After clicking Static, the section header should show "Static Iterations"
     await waitFor(() => {
-      expect(populateModule.populate).toHaveBeenCalled();
+      expect(screen.getByText('Static Iterations')).toBeInTheDocument();
     });
   });
 
-  it('should disable seed button while seeding', async () => {
-    const user = userEvent.setup();
-
-    // Make populate take some time
-    let resolvePopulate: () => void;
-    const populatePromise = new Promise<void>((resolve) => {
-      resolvePopulate = resolve;
-    });
-    vi.mocked(populateModule.populate).mockImplementation(() => populatePromise);
-
-    vi.mocked(firestore.getDocs).mockResolvedValue(
-      mockQuerySnapshot([]) as unknown as Awaited<ReturnType<typeof firestore.getDocs>>
-    );
-
+  it('should display memory buffer info', () => {
     render(<App />);
-
-    const seedButton = screen.getByRole('button', { name: /seed mock data/i });
-    await user.click(seedButton);
-
-    // Button should be disabled and show "Seeding…" while populate is running
-    await waitFor(() => {
-      expect(seedButton).toBeDisabled();
-      expect(screen.getByText('Seeding…')).toBeInTheDocument();
-    });
-
-    // Resolve populate to complete the test
-    resolvePopulate!();
-    await populatePromise;
+    expect(screen.getByText(/MEMORY BUFFER/i)).toBeInTheDocument();
   });
 
-  it('should fetch items after populating', async () => {
-    const user = userEvent.setup();
-
-    // Set up mocks: first call returns empty, subsequent calls return with item
-    let callCount = 0;
-    vi.mocked(firestore.getDocs).mockImplementation(() => {
-      callCount++;
-      if (callCount === 1) {
-        return Promise.resolve(
-          mockQuerySnapshot([]) as unknown as Awaited<ReturnType<typeof firestore.getDocs>>
-        );
-      }
-      return Promise.resolve(
-        mockQuerySnapshot([
-          { id: '1', data: { title: 'New item', createdAt: Date.now() } },
-        ]) as unknown as Awaited<ReturnType<typeof firestore.getDocs>>
-      );
-    });
-
+  it('should display footer', () => {
     render(<App />);
-
-    // Wait for initial fetch to complete
-    await waitFor(() => {
-      expect(screen.getByText('No items yet.')).toBeInTheDocument();
-    });
-
-    const seedButton = screen.getByRole('button', { name: /seed mock data/i });
-    await user.click(seedButton);
-
-    await waitFor(
-      () => {
-        expect(screen.getByText('New item')).toBeInTheDocument();
-      },
-      { timeout: 3000 }
-    );
-  });
-
-  it('should handle fetch errors gracefully', async () => {
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    vi.mocked(firestore.getDocs).mockRejectedValue(new Error('Fetch failed'));
-
-    render(<App />);
-
-    await waitFor(() => {
-      expect(consoleErrorSpy).toHaveBeenCalled();
-    });
-
-    consoleErrorSpy.mockRestore();
+    expect(screen.getByText(/Logo for Crypto/i)).toBeInTheDocument();
   });
 });

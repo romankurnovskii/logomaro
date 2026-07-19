@@ -35,3 +35,4 @@ coverage/
 *.lcov
 
 .dev
+docs/marketing

@@ -1,3 +1,12 @@
+/**
+ * @file setup.ts
+ * @description Global Vitest test setup and DOM mocks.
+ *
+ * @features
+ * - Imports jest-dom matchers
+ * - Cleans up DOM after each test
+ * - Mocks window.matchMedia and IntersectionObserver
+ */
 import '@testing-library/jest-dom';
 import { afterEach, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';

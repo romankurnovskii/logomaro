@@ -1,3 +1,13 @@
+/**
+ * @file populate.ts
+ * @description Mock data seeding utility for Firestore.
+ *
+ * @features
+ * - Seeds Firestore `items` collection with predefined mock data
+ *
+ * @dependencies Firebase Firestore
+ * @sideEffects Writes documents to Firestore
+ */
 import { collection, addDoc } from 'firebase/firestore';
 import { db } from './firebase';
 

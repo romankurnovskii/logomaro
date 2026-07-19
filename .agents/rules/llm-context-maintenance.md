@@ -1,10 +1,11 @@
 ---
-description: Rule for maintaining LLM context files when main features change
+description: Update public/llms.txt and public/llms-full.txt when main features change. Trigger: any feature add/modify that changes user-facing behavior, data models, or tech stack.
 globs:
   - 'src/**/*.tsx'
   - 'src/**/*.ts'
   - 'src/App.tsx'
 alwaysApply: true
+version: 1.0.1
 ---
 
 # LLM Context Files Maintenance Rule
