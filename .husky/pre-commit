@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+
+# 1. Format and lint only the files being committed
+pnpm exec lint-staged
+
+# 2. Run global checks (Consider moving these to CI/CD if commits get too slow)
+pnpm run typecheck
+pnpm run test

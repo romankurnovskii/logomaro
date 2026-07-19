@@ -1,0 +1,189 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================================================
+    // CONFIGURATION - Allowed App IDs
+    // ============================================================================
+    // Add or remove app IDs from this list to control which apps can access Firestore
+    // Only apps in this list will be allowed to read/write data
+    function isValidAppId(appId) {
+      return appId == 't52a-management' || 
+             appId == 'expo-app-1' || 
+             appId == 'expo-app-2';
+    }
+    
+    // ============================================================================
+    // HELPER FUNCTIONS - Reusable logic for cleaner rules
+    // ============================================================================
+    
+    // Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Check if authenticated user matches the userId in the path
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Check if the app ID is valid AND user is the owner
+    function isValidAppAndOwner(appId, userId) {
+      return isValidAppId(appId) && isOwner(userId);
+    }
+    
+    // Validate common data constraints
+    function isValidData() {
+      // Add your validation logic here
+      // Example: return request.resource.data.keys().hasAll(['requiredField']);
+      return true;
+    }
+    
+    // Check if document size is within limits (1MB = 1,048,576 bytes)
+    function isWithinSizeLimit() {
+      return request.resource.size() < 1048576;
+    }
+    
+    // Validate timestamp fields are not in the future
+    function hasValidTimestamps() {
+      return !request.resource.data.keys().hasAny(['createdAt', 'updatedAt']) ||
+             (request.resource.data.createdAt <= request.time &&
+              request.resource.data.updatedAt <= request.time);
+    }
+    
+    // ============================================================================
+    // APP-LEVEL RULES
+    // ============================================================================
+    
+    // Path structure: apps/{appId}/users/{userId}/{collection}/{docId}
+    // Note: 'users' collection is required to make userId a document (even position 4)
+    // Firestore requires: collections at odd positions (1,3,5...), documents at even (2,4,6...)
+    // Security: Only apps in the isValidAppId() list can access data
+    match /apps/{appId} {
+      
+      // Validate appId first - deny access if app is not in the allowed list
+      // This prevents users from creating documents under arbitrary app IDs
+      
+      // ============================================================================
+      // USER-LEVEL RULES - All data scoped to individual users
+      // ============================================================================
+      // Intermediate 'users' collection to make userId a document (position 4, even)
+      
+      match /users/{userId} {
+        
+        // Base access rule: App must be valid AND user must own this path
+        // This applies to the userId document itself if you store data there
+        allow read: if isValidAppAndOwner(appId, userId);
+        allow write: if isValidAppAndOwner(appId, userId) && isValidData() && isWithinSizeLimit();
+        
+        // ============================================================================
+        // COLLECTION-SPECIFIC RULES
+        // ============================================================================
+        
+        // FLOWS collection
+        match /flows/{flowId} {
+          allow read: if isValidAppAndOwner(appId, userId);
+          allow create: if isValidAppAndOwner(appId, userId) && 
+                          isValidData() && 
+                          isWithinSizeLimit();
+          allow update: if isValidAppAndOwner(appId, userId) && 
+                          isValidData() && 
+                          isWithinSizeLimit();
+          allow delete: if isValidAppAndOwner(appId, userId);
+          
+          // Subcollections under flows (if any)
+          match /{document=**} {
+            allow read, write: if isValidAppAndOwner(appId, userId);
+          }
+        }
+        
+        // TEMPLATES collection
+        match /templates/{templateId} {
+          allow read: if isValidAppAndOwner(appId, userId);
+          allow create: if isValidAppAndOwner(appId, userId) && 
+                          isValidData() && 
+                          isWithinSizeLimit();
+          allow update: if isValidAppAndOwner(appId, userId) && 
+                          isValidData() && 
+                          isWithinSizeLimit();
+          allow delete: if isValidAppAndOwner(appId, userId);
+          
+          // Example: Add specific validation for templates
+          // allow create: if isValidAppAndOwner(appId, userId) && 
+          //                 request.resource.data.name is string &&
+          //                 request.resource.data.name.size() > 0 &&
+          //                 request.resource.data.name.size() <= 100;
+          
+          match /{document=**} {
+            allow read, write: if isValidAppAndOwner(appId, userId);
+          }
+        }
+        
+        // TOOLS collection
+        match /tools/{toolId} {
+          allow read: if isValidAppAndOwner(appId, userId);
+          allow create: if isValidAppAndOwner(appId, userId) && 
+                          isValidData() && 
+                          isWithinSizeLimit();
+          allow update: if isValidAppAndOwner(appId, userId) && 
+                          isValidData() && 
+                          isWithinSizeLimit();
+          allow delete: if isValidAppAndOwner(appId, userId);
+          
+          match /{document=**} {
+            allow read, write: if isValidAppAndOwner(appId, userId);
+          }
+        }
+        
+        // WORKFLOW STATES collection
+        match /workflowStates/{stateId} {
+          allow read: if isValidAppAndOwner(appId, userId);
+          allow create: if isValidAppAndOwner(appId, userId) && 
+                          isValidData() && 
+                          isWithinSizeLimit();
+          allow update: if isValidAppAndOwner(appId, userId) && 
+                          isValidData() && 
+                          isWithinSizeLimit();
+          allow delete: if isValidAppAndOwner(appId, userId);
+          
+          match /{document=**} {
+            allow read, write: if isValidAppAndOwner(appId, userId);
+          }
+        }
+        
+        // ============================================================================
+        // ADD NEW COLLECTIONS HERE
+        // ============================================================================
+        
+        // Template for new collections:
+        // match /newCollection/{docId} {
+        //   allow read: if isValidAppAndOwner(appId, userId);
+        //   allow create: if isValidAppAndOwner(appId, userId) && isValidData();
+        //   allow update: if isValidAppAndOwner(appId, userId) && isValidData();
+        //   allow delete: if isValidAppAndOwner(appId, userId);
+        //   
+        //   match /{document=**} {
+        //     allow read, write: if isValidAppAndOwner(appId, userId);
+        //   }
+        // }
+      }
+    }
+    
+    // ============================================================================
+    // SHARED/PUBLIC COLLECTIONS (Optional)
+    // ============================================================================
+    
+    // Example: Public templates that anyone can read but only owners can write
+    // match /publicTemplates/{templateId} {
+    //   allow read: if true;
+    //   allow write: if isAuthenticated() && 
+    //                  request.auth.uid == resource.data.createdBy;
+    // }
+    
+    // ============================================================================
+    // DEFAULT DENY
+    // ============================================================================
+    // Any paths not explicitly matched above are denied by default
+  }
+}

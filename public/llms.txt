@@ -1,0 +1,2 @@
+React + Vite + TypeScript + Firebase Firestore application for managing items with real-time data fetching, mock data seeding, and responsive UI. Built with React 19, Tailwind CSS, Vitest testing, and comprehensive CI/CD setup with Husky pre-commit hooks.
+

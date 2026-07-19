@@ -1,0 +1,19 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-mochamousse: #9e7a68;
+  --color-cannolicream: #f7e8e1;
+  --color-chocolatemartini: #5c3a2d;
+  --color-balticamber: #8e5b3c;
+  --color-buffedbeige: #bfae9a;
+  --color-cornflowerblue: #264a5d;
+  --color-willowgreen: #728e6e;
+  --color-rosetan: #c59a6e;
+  --color-chanterelle: #e4d6c4;
+  --color-spicymandarin: #e27d60;
+}
+
+body {
+  @apply bg-cannolicream text-neutral-900 font-sans;
+  background: linear-gradient(135deg, #f1e3bc 0%, #9e7967 100%);
+}
