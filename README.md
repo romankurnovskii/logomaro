@@ -1,5 +1,3 @@
-by mew
-
 # Logomaro
 
 Generate institutional-grade geometric abstract SVG marks for DeFi and Web3 brands instantly via hand-crafted vectors, local procedural randomness, or natural language AI synthesis.
@@ -35,8 +33,4 @@ pnpm typecheck
 pnpm build
 ```
 
-## Links
-
-- **Features Guide:** [docs/marketing/features.md](file:///Users/r/dev/github/logomaro/docs/marketing/features.md)
-- **Monetization Options:** [docs/marketing/offer.md](file:///Users/r/dev/github/logomaro/docs/marketing/offer.md)
 - **License:** MIT
