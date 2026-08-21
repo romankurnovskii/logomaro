@@ -48,7 +48,7 @@ export const createAILogo = (aiData: AILogoData, index: number): Logo => {
                   repeat: Infinity,
                   ease: 'easeInOut',
                   delay: i * 0.2,
-                },
+                } as const,
               }
             : {};
 
@@ -165,7 +165,7 @@ export const createRandomLogo = (index: number): Logo => {
               strokeWidth="2"
               strokeDasharray={`${Math.random() * 20 + 10} ${Math.random() * 20 + 10}`}
               animate={animState({ rotate: 360 }, { rotate: 0 })}
-              transition={{ duration, repeat: Infinity, ease: 'linear' }}
+              transition={{ duration, repeat: Infinity, ease: 'linear' } as const}
               style={{ transformOrigin: '50px 50px' }}
             />
             <motion.circle
@@ -177,7 +177,9 @@ export const createRandomLogo = (index: number): Logo => {
               strokeWidth="1.5"
               strokeDasharray={`${Math.random() * 30 + 10} ${Math.random() * 30 + 10}`}
               animate={animState({ rotate: -360 }, { rotate: 0 })}
-              transition={{ duration: duration * 1.5, repeat: Infinity, ease: 'linear' }}
+              transition={
+                { duration: duration * 1.5, repeat: Infinity, ease: 'linear' } as const
+              }
               style={{ transformOrigin: '50px 50px' }}
             />
             <circle cx="50" cy="50" r="3" fill={c1} />
@@ -223,7 +225,7 @@ export const createRandomLogo = (index: number): Logo => {
               strokeWidth="2"
               strokeLinejoin="round"
               animate={animState({ points: [p.poly1, p.poly2, p.poly1] }, { points: p.poly1 })}
-              transition={{ duration, repeat: Infinity, ease: 'easeInOut' }}
+              transition={{ duration, repeat: Infinity, ease: 'easeInOut' } as const}
             />
             <polygon
               points="50,20 80,80 20,80"
@@ -254,7 +256,7 @@ export const createRandomLogo = (index: number): Logo => {
                 },
                 { d: `M10 ${p.curveY} Q 30 10, 50 ${p.curveY} T 90 ${p.curveY}` }
               )}
-              transition={{ duration, repeat: Infinity, ease: 'easeInOut' }}
+              transition={{ duration, repeat: Infinity, ease: 'easeInOut' } as const}
             />
             <path
               d={`M10 ${p.curveY + 15} Q 30 25, 50 ${p.curveY + 15} T 90 ${p.curveY + 15}`}
@@ -281,7 +283,7 @@ export const createRandomLogo = (index: number): Logo => {
                 { rotate: [0, 90, 180], scale: [1, 0.8, 1] },
                 { rotate: 0, scale: 1 }
               )}
-              transition={{ duration, repeat: Infinity, ease: 'easeInOut' }}
+              transition={{ duration, repeat: Infinity, ease: 'easeInOut' } as const}
               style={{ transformOrigin: `${p.cx}px ${p.cy}px` }}
             />
             <motion.circle
