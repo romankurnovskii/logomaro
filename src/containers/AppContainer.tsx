@@ -11,15 +11,16 @@
  * @dependencies useLogoStore (Zustand), LogoCard, framer-motion, lucide-react
  * @sideEffects Injects Puter.js script on mount; calls Puter AI API on generate
  */
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, Wand2 } from 'lucide-react';
+import { Loader2, Wand2, X } from 'lucide-react';
 import { useLogoStore } from '../stores/useLogoStore';
 import { LogoCard } from '../components/LogoCard';
 import { THEME } from '../utils/theme';
 import { createAILogo } from '../utils/logoGenerators';
 import { renderToString } from 'react-dom/server';
 import { Header } from '../components/layout/Header';
+import { svgStringToPngBlob } from '../utils/svgToPng';
 
 declare global {
   interface Window {
@@ -49,6 +50,15 @@ export const AppContainer = () => {
   const requestRef = useRef<number>(0);
   const previousTimeRef = useRef<number>(0);
   const totalCountRef = useRef(totalGeneratedCount);
+
+  const [modalLogo, setModalLogo] = useState<{
+    svg: string;
+    motif: string;
+    id: string;
+  } | null>(null);
+  const [modalBgColor, setModalBgColor] = useState<string>('#ffffff');
+  const [modalIsTransparent, setModalIsTransparent] = useState<boolean>(true);
+  const [modalDownloading, setModalDownloading] = useState(false);
 
   // Sync ref with store
   useEffect(() => {
@@ -147,6 +157,41 @@ export const AppContainer = () => {
       setIsGeneratingAI(false);
     }
   }, [aiInput, isGeneratingAI, addLogo, setAiInput, setFilter, setIsGeneratingAI]);
+
+  const handleOpenDownloadModal = useCallback((svg: string, motif: string, id: string) => {
+    setModalLogo({ svg, motif, id });
+    setModalIsTransparent(true);
+    setModalBgColor('#ffffff');
+  }, []);
+
+  const handleCloseDownloadModal = useCallback(() => {
+    setModalLogo(null);
+  }, []);
+
+  const handleModalDownload = useCallback(async () => {
+    if (!modalLogo) return;
+
+    setModalDownloading(true);
+    try {
+      const filename = `${modalLogo.motif}-${modalLogo.id}.png`;
+      const colorToUse = modalIsTransparent ? undefined : modalBgColor;
+      const pngBlob = await svgStringToPngBlob(modalLogo.svg, 2048, 2048, colorToUse);
+
+      const downloadUrl = URL.createObjectURL(pngBlob);
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(downloadUrl);
+      setModalLogo(null);
+    } catch (error) {
+      console.error('Failed to download PNG:', error);
+    } finally {
+      setModalDownloading(false);
+    }
+  }, [modalLogo, modalIsTransparent, modalBgColor]);
 
   // Update favicon with the latest logo whenever logos change
   useEffect(() => {
@@ -267,7 +312,7 @@ export const AppContainer = () => {
         >
           <AnimatePresence mode="popLayout">
             {filteredLogos.map((logo) => (
-              <LogoCard key={logo.id} logo={logo} />
+              <LogoCard key={logo.id} logo={logo} onDownloadPNG={handleOpenDownloadModal} />
             ))}
           </AnimatePresence>
         </motion.div>
@@ -317,6 +362,123 @@ export const AppContainer = () => {
           </div>
         </div>
       </footer>
+
+      {/* Download Modal */}
+      {modalLogo && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+          onClick={handleCloseDownloadModal}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-title"
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            transition={{ duration: 0.2 }}
+            className="relative bg-[#1a1512] rounded-2xl border border-[#4a403a] p-6 w-full max-w-md"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={handleCloseDownloadModal}
+              className="absolute top-3 right-3 p-1 rounded hover:bg-[#2f2723] text-[#e8e3df]"
+              aria-label="Close"
+            >
+              <X size={18} />
+            </button>
+
+            <h2
+              id="modal-title"
+              className="font-mono text-sm tracking-wider uppercase text-[#e8e3df] mb-4 text-center"
+            >
+              Download PNG
+            </h2>
+
+            {/* Preview */}
+            <div
+              className="w-48 h-48 mb-6 relative mx-auto"
+              style={{ backgroundColor: modalIsTransparent ? 'transparent' : modalBgColor }}
+            >
+              {modalIsTransparent && (
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    background:
+                      'repeating-conic-gradient(#3a302c 0 25%, transparent 0 50%) 50% / 8px 8px',
+                  }}
+                />
+              )}
+              <div className="relative w-full h-full flex items-center justify-center">
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: modalLogo.svg,
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Color Controls */}
+            <div className="space-y-4">
+              <label className="flex items-center gap-3 font-mono text-[11px] uppercase text-[#e8e3df] cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={modalIsTransparent}
+                  onChange={(e) => setModalIsTransparent(e.target.checked)}
+                  className="w-4 h-4 border border-[#4a403a] rounded bg-[#110e0d] text-[#00ff9d] focus:ring-2 focus:ring-[#00ff9d]"
+                />
+                Transparent background
+              </label>
+
+              {!modalIsTransparent && (
+                <div>
+                  <label className="block font-mono text-[11px] uppercase text-[#8c7a70] mb-2">
+                    Background Color
+                  </label>
+                  <input
+                    type="color"
+                    value={modalBgColor}
+                    onChange={(e) => setModalBgColor(e.target.value)}
+                    className="w-full h-10 p-0 border border-[#4a403a] rounded bg-transparent cursor-pointer"
+                    style={{ padding: 0 }}
+                  />
+                  <div className="flex gap-2 mt-2">
+                    {[
+                      '#ffffff',
+                      '#110e0d',
+                      '#000000',
+                      '#00ff9d',
+                      '#b829ff',
+                      '#d4af37',
+                      '#ff6b35',
+                    ].map((color) => (
+                      <button
+                        key={color}
+                        onClick={() => setModalBgColor(color)}
+                        className="w-8 h-8 rounded border-2 border-transparent hover:border-white transition-colors"
+                        style={{ backgroundColor: color }}
+                        aria-label={color}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Download Button */}
+              <button
+                onClick={handleModalDownload}
+                disabled={modalDownloading}
+                className="w-full py-3 px-4 rounded-lg font-mono text-sm uppercase tracking-wider text-[#110e0d] bg-[#e8e3df] hover:bg-[#d4af37] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {modalDownloading ? 'Preparing...' : 'Download PNG (2048×2048)'}
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
     </div>
   );
 };
