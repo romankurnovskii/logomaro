@@ -2,6 +2,8 @@
 
 Generate institutional-grade geometric abstract SVG marks for DeFi and Web3 brands instantly via hand-crafted vectors, local procedural randomness, or natural language AI synthesis.
 
+Try it live: https://puter.com/app/logomaro
+
 ![Logomaro Desktop](docs/assets/desktop.png)
 
 Logomaro is a lightweight, high-performance logo exploration engine designed specifically for developers and Web3 builders who need clean, scalable, geometric brand assets. By combining hand-crafted SVG geometry with a local procedural generator and Puter.js AI synthesis, it eliminates the need for expensive design agencies or complex vector editing software when spinning up new dApps or protocols.
