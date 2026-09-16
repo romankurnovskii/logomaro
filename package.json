@@ -22,7 +22,7 @@
     "@tailwindcss/vite": "^4.3.3",
     "firebase": "^12.18.0",
     "framer-motion": "^13.2.0",
-    "lucide-react": "^1.41.0",
+    "lucide-react": "^1.45.0",
     "react": "^19.3.0",
     "react-dom": "^19.2.8",
     "zustand": "^5.0.15"
