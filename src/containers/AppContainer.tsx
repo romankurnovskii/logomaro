@@ -57,6 +57,7 @@ export const AppContainer = () => {
     setIsGeneratingAI,
     tickTimer,
     totalGeneratedCount,
+    spawnBlobLogos,
   } = useLogoStore();
 
   const requestRef = useRef<number>(0);
@@ -170,6 +171,11 @@ export const AppContainer = () => {
     }
   }, [aiInput, isGeneratingAI, addLogo, setAiInput, setFilter, setIsGeneratingAI]);
 
+  const handleBlob = useCallback(() => {
+    spawnBlobLogos();
+    setFilter('blob');
+  }, [spawnBlobLogos, setFilter]);
+
   const handleOpenDownloadModal = useCallback((svg: string, motif: string, id: string) => {
     setModalLogo({ svg, motif, id });
     setModalIsTransparent(true);
@@ -252,6 +258,7 @@ export const AppContainer = () => {
           isGeneratingAI={isGeneratingAI}
           onAiInputChange={setAiInput}
           onGenerate={handleAIGenerate}
+          onBlob={handleBlob}
         />
 
         {/* Section Header */}

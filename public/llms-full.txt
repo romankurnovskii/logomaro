@@ -37,7 +37,8 @@ After using Logomaro, the user becomes:
   * 30 hand-crafted SVG logos (20 static + 10 animated)
   * AI-driven logo generation via Puter.js
   * Procedural random logo engine (new logo every 5 seconds)
-  * Filterable grid (All / Static / Dynamic / AI Gen)
+  * Filterable grid (All / Static / Dynamic / AI Gen / Blob)
+  * Blob marks — creature logos, each from a random unique name (blobatar style)
   * SVG copy-to-clipboard
   * Pause/play controls for animated logos
   * Memory buffer (max 500 logos)

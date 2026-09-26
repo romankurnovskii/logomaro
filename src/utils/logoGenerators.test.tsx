@@ -151,7 +151,7 @@ describe('createRandomLogo', () => {
   it('returns a Logo with a function Component and one of the procedural motifs', () => {
     const logo = createRandomLogo(7);
     expect(logo.id).toMatch(/^[A-Z]+-\d{4}-/);
-    expect(['static', 'dynamic']).toContain(logo.type);
+    expect(['static', 'dynamic', 'blob']).toContain(logo.type);
     expect(typeof logo.Component).toBe('function');
   });
 

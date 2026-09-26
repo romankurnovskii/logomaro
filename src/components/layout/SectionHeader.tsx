@@ -22,6 +22,7 @@ const SECTION_TITLES: Record<LogoType | 'all', string> = {
   static: 'Static Iterations',
   dynamic: 'Dynamic Iterations',
   'ai-driven': 'AI-Synthesized',
+  blob: 'Blob Marks',
 };
 
 export const SectionHeader = ({ filter, displayedCount, totalCount }: SectionHeaderProps) => (

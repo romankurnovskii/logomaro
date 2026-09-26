@@ -12,6 +12,7 @@ Logomaro is a lightweight, high-performance logo exploration engine designed spe
 
 - **Puter.js AI Synthesis** — Describe a concept in natural language and receive clean, production-ready SVG code dynamically.
 - **Procedural Engine** — Explore a new random geometric SVG composition generated locally every 5 seconds.
+- **Blob marks** — A [blobatar](https://github.com/Alain00/blobatar)-style creature. The Blob button draws five marks, each from its own random name. The live engine mixes the style in too.
 - **Hand-Crafted Vector Library** — Includes 30 custom geometric marks (20 static, 10 animated with Framer Motion).
 - **Instant SVG Access** — Click to copy clean SVG code directly to your clipboard from a high-density, filterable explorer grid.
 - **Continuous Memory Buffer** — View, pause, play, and search up to 500 generated iterations in a persistent viewport.

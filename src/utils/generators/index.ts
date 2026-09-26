@@ -1,7 +1,7 @@
 /**
  * @file index.ts
  * @description Public entry for the procedural generator pool.
- * Dispatch by hash(seed) over phyllotaxis, lissajous, rose, golden, spirograph.
+ * Dispatch by hash(seed) over phyllotaxis, lissajous, rose, golden, spirograph, blob.
  */
 import type { Logo } from '../../types/logo';
 import { mulberry32 } from './rng';
@@ -10,12 +10,20 @@ import { lissajous } from './lissajous';
 import { roseCurve } from './roseCurve';
 import { goldenSpiral } from './goldenSpiral';
 import { spirograph } from './spirograph';
+import { blobMark } from './blobMark';
 
 export { DEFI_PALETTE } from './palette';
 
 type Generator = (rng: () => number, index: number, isAnim: boolean) => Logo;
 
-const POOL: Generator[] = [phyllotaxis, lissajous, roseCurve, goldenSpiral, spirograph];
+const POOL: Generator[] = [
+  phyllotaxis,
+  lissajous,
+  roseCurve,
+  goldenSpiral,
+  spirograph,
+  blobMark,
+];
 
 export const buildProceduralId = (prefix: string, index: number): string => {
   const seq = String(index).padStart(4, '0');

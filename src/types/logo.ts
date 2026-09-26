@@ -4,12 +4,12 @@
  *
  * @features
  * - `Logo` — full logo object with id, type, motif, and component
- * - `LogoType` — union type for logo categories (static, dynamic, ai-driven)
+ * - `LogoType` — union type for logo categories (static, dynamic, ai-driven, blob)
  * - `LogoElement` — SVG element descriptor for AI-generated logos
  * - `AILogoData` — AI generation response shape
  * - `ThemeColors` — color palette constants shape
  */
-export type LogoType = 'static' | 'dynamic' | 'ai-driven';
+export type LogoType = 'static' | 'dynamic' | 'ai-driven' | 'blob';
 
 export interface Logo {
   id: string;

@@ -10,13 +10,14 @@
  *
  * @dependencies lucide-react
  */
-import { Loader2, Wand2 } from 'lucide-react';
+import { CircleDot, Loader2, Wand2 } from 'lucide-react';
 
 interface AIInputBarProps {
   aiInput: string;
   isGeneratingAI: boolean;
   onAiInputChange: (value: string) => void;
   onGenerate: () => void;
+  onBlob: () => void;
 }
 
 export const AIInputBar = ({
@@ -24,6 +25,7 @@ export const AIInputBar = ({
   isGeneratingAI,
   onAiInputChange,
   onGenerate,
+  onBlob,
 }: AIInputBarProps) => (
   <div className="mb-10 bg-[#1a1614] border border-[#2f2723] rounded-xl p-4 flex flex-col md:flex-row gap-4 items-center shadow-lg shadow-black/20">
     <div className="flex-1 w-full relative">
@@ -63,6 +65,19 @@ export const AIInputBar = ({
           GENERATE
         </>
       )}
+    </button>
+    <button
+      type="button"
+      onClick={onBlob}
+      disabled={isGeneratingAI}
+      className={`w-full md:w-auto px-6 py-3 rounded-lg flex items-center justify-center gap-2 font-mono text-xs tracking-wider transition-all duration-300 border ${
+        isGeneratingAI
+          ? 'bg-[#2f2723] text-[#8c7a70] cursor-not-allowed border-transparent'
+          : 'bg-[#ff8a5b]/10 border-[#ff8a5b]/40 text-[#e8e3df] hover:border-[#ff8a5b]'
+      }`}
+    >
+      <CircleDot size={16} className="text-[#ff8a5b]" />
+      BLOB
     </button>
   </div>
 );

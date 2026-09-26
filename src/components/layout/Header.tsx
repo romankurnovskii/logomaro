@@ -10,7 +10,7 @@
  * @dependencies lucide-react, framer-motion, useLogoStore (Zustand)
  * @sideEffects None
  */
-import { Activity, Grid, BarChart2, Sparkles, Wand2 } from 'lucide-react';
+import { Activity, Grid, BarChart2, Sparkles, Wand2, CircleDot } from 'lucide-react';
 import { useLogoStore } from '../../stores/useLogoStore';
 import { THEME } from '../../utils/theme';
 import type { LogoType } from '../../types/logo';
@@ -25,6 +25,7 @@ const FILTER_TABS: { id: LogoType | 'all'; label: string; icon: typeof Grid }[] 
   { id: 'static', label: 'Static', icon: BarChart2 },
   { id: 'dynamic', label: 'Dynamic', icon: Sparkles },
   { id: 'ai-driven', label: 'AI Gen', icon: Wand2 },
+  { id: 'blob', label: 'Blob', icon: CircleDot },
 ];
 
 export const Header = ({ timeUntilNext }: HeaderProps) => {
@@ -82,7 +83,9 @@ export const Header = ({ timeUntilNext }: HeaderProps) => {
                         ? 'text-[#00ff9d]'
                         : tab.id === 'ai-driven'
                           ? 'text-[#b829ff]'
-                          : 'text-[#d4af37]'
+                          : tab.id === 'blob'
+                            ? 'text-[#ff8a5b]'
+                            : 'text-[#d4af37]'
                       : ''
                   }
                 />

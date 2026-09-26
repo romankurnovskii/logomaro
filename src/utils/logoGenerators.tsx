@@ -6,7 +6,7 @@
  * - `createAILogo` — builds a Logo from AI-generated data, auto-centered/scaled,
  *   with stroke-width hierarchy and fill support.
  * - `createRandomLogo` — delegates to the mathematical generator pool
- *   (phyllotaxis, lissajous, rose curve, golden spiral, spirograph).
+ *   (phyllotaxis, lissajous, rose curve, golden spiral, spirograph, blob).
  */
 import { motion } from 'framer-motion';
 import type { Logo, AILogoData, LogoElement } from '../types/logo';

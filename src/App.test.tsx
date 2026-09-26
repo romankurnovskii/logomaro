@@ -47,6 +47,7 @@ describe('App', () => {
     expect(screen.getByText('Static')).toBeInTheDocument();
     expect(screen.getByText('Dynamic')).toBeInTheDocument();
     expect(screen.getByText('AI Gen')).toBeInTheDocument();
+    expect(screen.getByText('Blob')).toBeInTheDocument();
   });
 
   it('should render AI input field', () => {
@@ -59,6 +60,19 @@ describe('App', () => {
   it('should render the GENERATE button', () => {
     render(<App />);
     expect(screen.getByText('GENERATE')).toBeInTheDocument();
+    expect(screen.getByText('BLOB')).toBeInTheDocument();
+  });
+
+  it('should add blob marks and filter to them', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByText('BLOB'));
+
+    await waitFor(() => {
+      expect(screen.getByText('Blob Marks')).toBeInTheDocument();
+    });
+    expect(screen.getAllByText(/Concept/i)).toHaveLength(5);
   });
 
   it('should render logo cards', () => {

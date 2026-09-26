@@ -86,7 +86,9 @@ export const LogoCard = forwardRef<HTMLDivElement, LogoCardProps>(
                 ? 'border-[#00ff9d]/30 text-[#00ff9d]'
                 : logo.type === 'ai-driven'
                   ? 'border-[#b829ff]/50 text-[#b829ff]'
-                  : 'border-[#d4af37]/30 text-[#d4af37]'
+                  : logo.type === 'blob'
+                    ? 'border-[#ff8a5b]/50 text-[#ff8a5b]'
+                    : 'border-[#d4af37]/30 text-[#d4af37]'
             }`}
           >
             {logo.type}
