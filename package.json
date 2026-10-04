@@ -22,7 +22,7 @@
     "@tailwindcss/vite": "^4.3.3",
     "blobatar": "2.7.0",
     "firebase": "^12.19.0",
-    "framer-motion": "^13.4.4",
+    "framer-motion": "^13.4.6",
     "lucide-react": "^1.48.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
