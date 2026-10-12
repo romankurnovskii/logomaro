@@ -8,6 +8,7 @@
  */
 import type { ReactElement } from 'react';
 import { render, type RenderOptions } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import { vi } from 'vitest';
 
 // Custom render function that includes providers if needed
