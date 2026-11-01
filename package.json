@@ -21,7 +21,7 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
     "blobatar": "2.7.0",
-    "firebase": "^12.19.0",
+    "firebase": "^13.1.0",
     "framer-motion": "^14.9.0",
     "lucide-react": "^1.66.0",
     "react": "^19.3.1",
