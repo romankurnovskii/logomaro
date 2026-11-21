@@ -23,14 +23,73 @@ export const CANVAS_MIN = -50;
 export const CANVAS_MAX = 150;
 
 /**
- * Puter model ids tried in order. Puter retires model ids without notice, so the
- * first candidate is the preferred one and the rest are fallbacks.
+ * Static fallback model ids, tried in order when the live Puter catalog cannot
+ * be read. Puter retires model ids without notice, so the first candidate is the
+ * preferred one and the rest are fallbacks.
  */
 export const AI_MODEL_CANDIDATES = [
   'claude-sonnet-4-6',
   'claude-sonnet-5',
   'claude-haiku-4-5',
 ] as const;
+
+/**
+ * Preference order used to pick a model out of the live Puter catalog.
+ * The first regex that matches an id wins.
+ */
+const MODEL_PREFERENCE: RegExp[] = [/^claude-sonnet/i, /^claude/i, /^gpt-5/i, /^gpt-4/i];
+
+/** Model id that last worked, so the catalog is only consulted once per session. */
+let resolvedModel: string | null = null;
+
+/** Test-only hook: clears the cached model id between test cases. */
+export const __resetResolvedModelForTests = (): void => {
+  resolvedModel = null;
+};
+
+/**
+ * Picks a model id from a Puter catalog listing.
+ * Returns the first id matching the preference order, else the first id, else null.
+ */
+export const pickModelFromCatalog = (models: Array<{ id?: string }>): string | null => {
+  const ids = models
+    .map((model) => (typeof model?.id === 'string' ? model.id.trim() : ''))
+    .filter((id) => id.length > 0);
+
+  if (ids.length === 0) return null;
+
+  for (const pattern of MODEL_PREFERENCE) {
+    const match = ids.find((id) => pattern.test(id));
+    if (match) return match;
+  }
+
+  return ids[0];
+};
+
+/**
+ * Resolves the model id to use, preferring the live Puter catalog and falling
+ * back to the static candidate list. The result is cached for the session.
+ */
+export const resolveModel = async (
+  listModels?: () => Promise<Array<{ id?: string }>>
+): Promise<string> => {
+  if (resolvedModel) return resolvedModel;
+
+  if (listModels) {
+    try {
+      const picked = pickModelFromCatalog(await listModels());
+      if (picked) {
+        resolvedModel = picked;
+        return picked;
+      }
+    } catch {
+      // Catalog unavailable — fall through to the static candidates.
+    }
+  }
+
+  resolvedModel = AI_MODEL_CANDIDATES[0];
+  return resolvedModel;
+};
 
 const MODEL_NOT_FOUND = /model not found|unknown model|invalid model/i;
 
@@ -298,12 +357,17 @@ export const callAiLogoModel = async (
     messages: Array<{ role: string; content: string }>,
     options?: { model?: string; temperature?: number; max_tokens?: number; seed?: number }
   ) => Promise<{ message?: { content: string } } | string>,
-  seed: number = Math.floor(Math.random() * 0xffffffff)
+  seed: number = Math.floor(Math.random() * 0xffffffff),
+  listModels?: () => Promise<Array<{ id?: string }>>
 ): Promise<ValidatedLogo> => {
   const messages = buildMessages(userPrompt, index, seed);
+  const primary = await resolveModel(listModels);
+  const candidates = [primary, ...AI_MODEL_CANDIDATES].filter(
+    (model, i, all) => all.indexOf(model) === i
+  );
   let lastError: unknown = null;
 
-  for (const model of AI_MODEL_CANDIDATES) {
+  for (const model of candidates) {
     try {
       const response = await chat(messages, {
         model,
@@ -314,11 +378,14 @@ export const callAiLogoModel = async (
       const text = extractResponseText(response);
       if (!text) throw new Error('Empty model response.');
       const parsed = extractJson(text) as AIResponseInput;
-      return validateResponse(parsed);
+      const validated = validateResponse(parsed);
+      resolvedModel = model;
+      return validated;
     } catch (error) {
       // Only a retired/unknown model id is worth retrying; a bad response is not.
       if (!isModelNotFoundError(error)) throw error;
       lastError = error;
+      if (resolvedModel === model) resolvedModel = null;
     }
   }
 

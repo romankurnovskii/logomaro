@@ -1,14 +1,30 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   AI_MODEL_CANDIDATES,
+  __resetResolvedModelForTests,
   buildMessages,
   buildUserMessage,
   callAiLogoModel,
   extractJson,
   geometrySignature,
+  pickModelFromCatalog,
+  resolveModel,
   validateResponse,
   type AIResponseInput,
 } from './aiLogoGenerator';
+
+const validLogoJson = JSON.stringify({
+  motifName: 'Concentric',
+  primaryColor: '#d4af37',
+  secondaryColor: '#8c7a70',
+  elements: [
+    { shape: 'circle', cx: 50, cy: 50, r: 20, strokeType: 'primary', isAnimated: false },
+  ],
+});
+
+beforeEach(() => {
+  __resetResolvedModelForTests();
+});
 
 describe('buildUserMessage / buildMessages', () => {
   it('builds a user message that includes the user word, a seed, and a construction brief', () => {
@@ -228,6 +244,50 @@ describe('geometrySignature', () => {
   });
 });
 
+describe('pickModelFromCatalog', () => {
+  it('prefers a claude-sonnet id over other claude and gpt ids', () => {
+    const picked = pickModelFromCatalog([
+      { id: 'gpt-5-mini' },
+      { id: 'claude-haiku-4-5' },
+      { id: 'claude-sonnet-4-6' },
+    ]);
+    expect(picked).toBe('claude-sonnet-4-6');
+  });
+
+  it('falls back to the first id when no preference matches', () => {
+    const picked = pickModelFromCatalog([{ id: 'llama-3-70b' }, { id: 'mistral-large' }]);
+    expect(picked).toBe('llama-3-70b');
+  });
+
+  it('returns null for an empty list', () => {
+    expect(pickModelFromCatalog([])).toBeNull();
+  });
+
+  it('ignores entries without a usable id', () => {
+    const picked = pickModelFromCatalog([{}, { id: '   ' }, { id: 'gpt-4o' }]);
+    expect(picked).toBe('gpt-4o');
+  });
+});
+
+describe('resolveModel', () => {
+  it('uses the catalog and caches the pick', async () => {
+    const listModels = vi
+      .fn()
+      .mockResolvedValue([{ id: 'gpt-5' }, { id: 'claude-sonnet-4-6' }]);
+
+    await expect(resolveModel(listModels)).resolves.toBe('claude-sonnet-4-6');
+    await expect(resolveModel(listModels)).resolves.toBe('claude-sonnet-4-6');
+
+    expect(listModels).toHaveBeenCalledTimes(1);
+  });
+
+  it('falls back to the static candidates when the catalog rejects', async () => {
+    const listModels = vi.fn().mockRejectedValue(new Error('catalog unavailable'));
+
+    await expect(resolveModel(listModels)).resolves.toBe(AI_MODEL_CANDIDATES[0]);
+  });
+});
+
 describe('callAiLogoModel', () => {
   it('passes messages + options to the chat function and returns a validated logo', async () => {
     const chat = vi.fn().mockResolvedValue({
@@ -284,6 +344,29 @@ describe('callAiLogoModel', () => {
     await callAiLogoModel('hello', 0, chat, 12345);
     const [, opts] = chat.mock.calls[0];
     expect(opts?.seed).toBe(12345);
+  });
+
+  it('uses the model resolved from the live catalog', async () => {
+    const chat = vi.fn().mockResolvedValue({ message: { content: validLogoJson } });
+    const listModels = vi
+      .fn()
+      .mockResolvedValue([{ id: 'gpt-5' }, { id: 'claude-sonnet-4-6' }]);
+
+    const v = await callAiLogoModel('hello', 0, chat, 1, listModels);
+
+    expect(chat).toHaveBeenCalledTimes(1);
+    expect(chat.mock.calls[0][1]?.model).toBe('claude-sonnet-4-6');
+    expect(v.motifName).toBe('Concentric');
+  });
+
+  it('falls back to the static candidates when the catalog rejects', async () => {
+    const chat = vi.fn().mockResolvedValue({ message: { content: validLogoJson } });
+    const listModels = vi.fn().mockRejectedValue(new Error('catalog unavailable'));
+
+    await callAiLogoModel('hello', 0, chat, 1, listModels);
+
+    expect(chat).toHaveBeenCalledTimes(1);
+    expect(chat.mock.calls[0][1]?.model).toBe(AI_MODEL_CANDIDATES[0]);
   });
 
   it('throws when the model returns invalid JSON', async () => {

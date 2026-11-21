@@ -39,6 +39,9 @@ declare global {
             max_tokens?: number;
           }
         ) => Promise<{ message?: { content: string } } | string>;
+        listModels: (
+          provider?: string
+        ) => Promise<Array<{ id?: string; puterId?: string; provider?: string }>>;
       };
     };
   }
@@ -128,7 +131,8 @@ export const AppContainer = () => {
             userPrompt,
             i,
             chat,
-            Date.now() + i * 9973 + Math.floor(Math.random() * 1_000_000)
+            Date.now() + i * 9973 + Math.floor(Math.random() * 1_000_000),
+            () => window.puter!.ai.listModels()
           );
 
           const motifKey = validated.motifName.toLowerCase();
