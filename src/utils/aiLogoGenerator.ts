@@ -22,6 +22,18 @@ export const MAX_ELEMENTS = 3;
 export const CANVAS_MIN = -50;
 export const CANVAS_MAX = 150;
 
+/**
+ * Puter model ids tried in order. Puter retires model ids without notice, so the
+ * first candidate is the preferred one and the rest are fallbacks.
+ */
+export const AI_MODEL_CANDIDATES = [
+  'claude-sonnet-4-6',
+  'claude-sonnet-5',
+  'claude-haiku-4-5',
+] as const;
+
+const MODEL_NOT_FOUND = /model not found|unknown model|invalid model/i;
+
 const HEX_COLOR = /^#([0-9a-f]{6}|[0-9a-f]{3})$/i;
 
 const asFiniteNumber = (v: unknown): number | null => {
@@ -266,6 +278,19 @@ export const geometrySignature = (logo: ValidatedLogo): string =>
     })
   );
 
+const errorMessage = (error: unknown): string => {
+  if (error instanceof Error) return error.message;
+  if (error && typeof error === 'object') {
+    const obj = error as { message?: unknown; error?: unknown };
+    if (typeof obj.message === 'string') return obj.message;
+    if (typeof obj.error === 'string') return obj.error;
+  }
+  return String(error ?? '');
+};
+
+const isModelNotFoundError = (error: unknown): boolean =>
+  MODEL_NOT_FOUND.test(errorMessage(error));
+
 export const callAiLogoModel = async (
   userPrompt: string,
   index: number,
@@ -276,16 +301,28 @@ export const callAiLogoModel = async (
   seed: number = Math.floor(Math.random() * 0xffffffff)
 ): Promise<ValidatedLogo> => {
   const messages = buildMessages(userPrompt, index, seed);
-  const response = await chat(messages, {
-    model: 'claude-sonnet-4-5',
-    temperature: 0.7,
-    max_tokens: 600,
-    seed,
-  });
-  const text = extractResponseText(response);
-  if (!text) throw new Error('Empty model response.');
-  const parsed = extractJson(text) as AIResponseInput;
-  return validateResponse(parsed);
+  let lastError: unknown = null;
+
+  for (const model of AI_MODEL_CANDIDATES) {
+    try {
+      const response = await chat(messages, {
+        model,
+        temperature: 0.7,
+        max_tokens: 600,
+        seed,
+      });
+      const text = extractResponseText(response);
+      if (!text) throw new Error('Empty model response.');
+      const parsed = extractJson(text) as AIResponseInput;
+      return validateResponse(parsed);
+    } catch (error) {
+      // Only a retired/unknown model id is worth retrying; a bad response is not.
+      if (!isModelNotFoundError(error)) throw error;
+      lastError = error;
+    }
+  }
+
+  throw lastError ?? new Error('No AI model candidates available.');
 };
 
 const extractResponseText = (response: unknown): string => {

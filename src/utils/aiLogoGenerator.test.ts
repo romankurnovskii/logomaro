@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import {
+  AI_MODEL_CANDIDATES,
   buildMessages,
   buildUserMessage,
   callAiLogoModel,
@@ -288,6 +289,60 @@ describe('callAiLogoModel', () => {
   it('throws when the model returns invalid JSON', async () => {
     const chat = vi.fn().mockResolvedValue({ message: { content: 'no json here' } });
     await expect(callAiLogoModel('x', 0, chat)).rejects.toThrow();
+  });
+
+  it('falls back to the next model when Puter reports the model is not found', async () => {
+    const chat = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('Model not found: claude-sonnet-4-5'))
+      .mockResolvedValueOnce({
+        message: {
+          content: JSON.stringify({
+            motifName: 'Concentric',
+            primaryColor: '#d4af37',
+            secondaryColor: '#8c7a70',
+            elements: [
+              {
+                shape: 'circle',
+                cx: 50,
+                cy: 50,
+                r: 20,
+                strokeType: 'primary',
+                isAnimated: false,
+              },
+            ],
+          }),
+        },
+      });
+
+    const v = await callAiLogoModel('hello', 0, chat);
+
+    expect(chat).toHaveBeenCalledTimes(2);
+    expect(chat.mock.calls[0][1]?.model).toBe(AI_MODEL_CANDIDATES[0]);
+    expect(chat.mock.calls[1][1]?.model).toBe(AI_MODEL_CANDIDATES[1]);
+    expect(v.motifName).toBe('Concentric');
+  });
+
+  it('does not try the remaining candidates when the failure is not a model error', async () => {
+    const chat = vi.fn().mockResolvedValue({ message: { content: 'no json here' } });
+
+    await expect(callAiLogoModel('x', 0, chat)).rejects.toThrow(/No JSON object found/);
+
+    expect(chat).toHaveBeenCalledTimes(1);
+    expect(chat.mock.calls[0][1]?.model).toBe(AI_MODEL_CANDIDATES[0]);
+  });
+
+  it('throws the last error when every candidate model is unavailable', async () => {
+    const chat = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('Model not found: claude-sonnet-4-6'))
+      .mockRejectedValueOnce(new Error('Model not found: claude-sonnet-5'))
+      .mockRejectedValueOnce(new Error('Model not found: claude-haiku-4-5'));
+
+    await expect(callAiLogoModel('x', 0, chat)).rejects.toThrow(
+      'Model not found: claude-haiku-4-5'
+    );
+    expect(chat).toHaveBeenCalledTimes(AI_MODEL_CANDIDATES.length);
   });
 
   it('throws when the model returns invalid geometry', async () => {
